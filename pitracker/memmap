@@ -12,6 +12,7 @@ SECTIONS
    __bss_start__ = .;
    *(.bss*)
    } > ram
+   end = .;
    __bss_end__ = .;
    __bss_size__ = __bss_end__ - __bss_start__;
 }

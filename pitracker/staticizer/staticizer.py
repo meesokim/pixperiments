@@ -19,8 +19,8 @@ def main():
     plugins = world.get_all_plugins()
     initial_plugin_list = []
     for plugin in plugins:
-        uri = plugin.get_uri().as_string()
-        library = lilv.lilv_uri_to_path(plugin.get_library_uri().as_string())
+        uri = plugin.get_uri()
+        library = plugin.get_library_uri().get_path()
         initial_plugin_list.append({'uri': uri,
                                     'library': library,
                                     'symbol': "lv2_descriptor_%s" % md5(uri).hexdigest()})
@@ -32,7 +32,7 @@ def main():
         try:
             subprocess.check_output(["arm-none-eabi-objcopy", "--redefine-sym", "lv2_descriptor=%s" % (p['symbol'],), p['library']], stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError  as e:
-            print "Failed to process %s (%d): %s" % (p['uri'], e.returncode, e.output)
+            print ("Failed to process %s (%d): %s" % (p['uri'], e.returncode, e.output))
             continue
         plugin_list.append(p)
 

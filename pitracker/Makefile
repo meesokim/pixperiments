@@ -21,11 +21,11 @@ export CC = arm-none-eabi-gcc
 export LD = arm-none-eabi-ld
 OBJDUMP = arm-none-eabi-objdump
 OBJCOPY = arm-none-eabi-objcopy
+FILT = arm-none-eabi-c++filt
 
 EXTRA_CFLAGS = -I$(CWD)/includes/posix -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s -mhard-float -mfloat-abi=hard -mfpu=vfp -ffast-math
 AFLAGS = --warn --fatal-warnings -mcpu=arm1176jzf-s -mfloat-abi=hard -mfpu=vfp -march=armv6
-LIB = -L ../buildgcc/gnuarm/arm-none-eabi/lib/fpu/ -L ../buildgcc/gnuarm/lib/gcc/arm-none-eabi/4.7.2/fpu/
-
+LIB = -specs=nano.specs -specs=nosys.specs -nostartfiles -fno-exceptions -fno-unwind-tables -fno-rtti -L /usr/lib/arm-none-eabi/newlib/thumb/v7e-m+dp/hard -L /usr/lib/gcc/arm-none-eabi/8.3.1/thumb/v7e-m+dp/hard #-L ../buildgcc/gnuarm/arm-none-eabi/lib/fpu/ -L ../buildgcc/gnuarm/lib/gcc/arm-none-eabi/4.7.2/fpu/
 
 PLATFORM_SRC = $(wildcard includes/pi/*.c)
 
@@ -84,7 +84,7 @@ posix: $(POSIX_OBJS)
 platform: $(PLATFORM_OBJS)
 
 pitracker.elf : memmap vectors.o pitracker.o posix platform plugins includes/lv2.o includes/mf_read.o includes/pi/emmc/libemmc.a
-	$(LD) vectors.o pitracker.o includes/lv2.o includes/mf_read.o includes/pi/emmc/libemmc.a $(PLUGIN_OBJS) $(PLATFORM_OBJS) $(POSIX_OBJS) -T memmap -o pitracker.elf $(LIB) -lc -lgcc -lm
+	$(CC) vectors.o pitracker.o includes/lv2.o includes/mf_read.o includes/pi/emmc/libemmc.a $(PLUGIN_OBJS) $(PLATFORM_OBJS) $(POSIX_OBJS) -T memmap -o pitracker.elf $(LIB) -lc -lm -lgcc
 
 
 # This is rotten and almost certainly broken:
@@ -93,6 +93,7 @@ pitracker_exe :  platform includes/lv2.o includes/mf_read.o plugins
 
 kernel_img : pitracker.elf
 	$(OBJCOPY) pitracker.elf -O binary kernel.img
+	$(OBJDUMP) -d pitracker.elf | $(FILT) > pitracker.lst
 	cp kernel.img SD_Card/
 
 
